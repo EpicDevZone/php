@@ -1,59 +1,14 @@
 <?php
-//! Start the session before any HTML so authenticated users can be redirected safely.
-session_start();
 
-//! Store validation messages so they can be shown below the page heading.
-$errors = [];
+require_once __DIR__ . '/../src/Core/Autoloader.php';
 
-//! Run the login code only after the form is submitted.
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $email = trim($_POST["email"] ?? "");
-    $password = $_POST["password"] ?? "";
+use App\Controllers\AuthController;
 
-    //! Check the values before asking the database for the user.
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $errors[] = "The email must be a valid email address";
-    }
-    if (strlen($password) < 6) {
-        $errors[] = "The password must be at least 6 characters";
-    }
-
-    //! Check the password stored in the database.
-    if (empty($errors)) {
-        try {
-            $pdo = new PDO(
-                "mysql:host=localhost;port=3306;dbname=php_workshop;charset=utf8mb4",
-                "root",
-                "",
-                [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
-            );
-
-            $statement = $pdo->prepare("SELECT id, username, email, password FROM users WHERE email = :email LIMIT 1");
-            $statement->execute(["email" => strtolower($email)]);
-            $user = $statement->fetch(PDO::FETCH_ASSOC);
-
-            if (!$user || !password_verify($password, $user["password"])) {
-                $errors[] = "The email or password is incorrect";
-            } else {
-                //? Regenerate the session ID after login to prevent session fixation.
-                session_regenerate_id(true);
-
-                //! Store only the user details needed by protected pages.
-                $_SESSION['user'] = [
-                    'id' => $user['id'],
-                    'username' => $user['username'],
-                    'email' => $user['email'],
-                ];
-
-                //! Send the authenticated user to the protected dashboard.
-                header('Location: userDashboard.php');
-                exit;
-            }
-        } catch (PDOException $e) {
-            $errors[] = "Unable to process the login right now";
-        }
-    }
-}
+//! The controller handles validation and authentication before the page is shown.
+$auth = new AuthController();
+$login = $auth->login();
+$errors = $login['errors'];
+$email = $login['email'];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -84,7 +39,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     </ul>
                 </div>
             <?php endif; ?>
-
             <?php //! This form sends the login values back to this same page. 
             ?>
             <form action="" method="POST" class="space-y-5">

@@ -101,6 +101,27 @@ class User
 
         return $result === false ? null : $result;
     }
+    //!User is find by the UserId 
+    public static function findById(int $id): ?array
+    {
+        $pdo = Database::getInstance()->getConnection();
+
+        $statement = $pdo->prepare("SELECT * FROM users WHERE id = :id");
+        $statement->execute(['id' => $id]);
+
+        $result = $statement->fetch();
+
+        return $result ?: null;
+    }
+    //! Authenticate the user with an email and compare the password with its hash.
+    public static function authenticate(string $email, string $password): ?array
+    {
+        $user = self::findByEmail($email);
+        if ($user && password_verify($password, $user['password'])) {
+            return $user;
+        }
+        return null;
+    }
 
 
     public function displayUser(): void

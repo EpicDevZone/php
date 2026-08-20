@@ -74,4 +74,50 @@ class AuthController
             'email' => $this->email,
         ];
     }
+
+
+
+    //! Authenticate a user submitted by the login form.
+    public function login(): array
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->email = trim($_POST['email'] ?? '');
+            $password = $_POST['password'] ?? '';
+
+            if (empty($this->email)) {
+                $this->errors[] = 'Email cannot be empty';
+            } elseif (!filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
+                $this->errors[] = 'The email must be a valid email address';
+            }
+
+            if (empty($password)) {
+                $this->errors[] = 'Password cannot be empty';
+            } elseif (strlen($password) < 6) {
+                $this->errors[] = 'The password must be at least 6 characters';
+            }
+
+            if (empty($this->errors)) {
+                $user = User::authenticate($this->email, $password);
+
+                if ($user === null) {
+                    $this->errors[] = 'The email or password is incorrect';
+                } else {
+                    session_start();
+                    session_regenerate_id(true);
+                    $_SESSION['user'] = [
+                        'id' => $user['id'],
+                        'username' => $user['username'],
+                        'email' => $user['email'],
+                    ];
+                    header('Location: userDashboard.php');
+                    exit;
+                }
+            }
+        }
+
+        return [
+            'errors' => $this->errors,
+            'email' => $this->email,
+        ];
+    }
 }
