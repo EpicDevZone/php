@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Models\Post;
 use App\Models\User;
 
 class AuthController
@@ -10,8 +11,51 @@ class AuthController
     private string $username = '';
     private string $email = '';
 
+    //! Handle post creation, editing, deletion, and loading for the dashboard.
+    public function dashboard(array $user): array
+    {
+        //? The user ID is used for both ownership checks and post lookup.
+        $userId = (int) $user['id'];
+        $postError = '';
+
+        //! Process dashboard forms only when the user submits a POST request.
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $action = $_POST['action'] ?? '';
+            $content = trim($_POST['content'] ?? '');
+            $postId = (int) ($_POST['post_id'] ?? 0);
+
+            //? Empty content is rejected before create or update reaches the model.
+            if (in_array($action, ['create', 'update'], true) && $content === '') {
+                $postError = 'A post cannot be empty.';
+            } elseif ($action === 'create') {
+                //! Create a new post for the currently logged-in user.
+                Post::create($userId, $content);
+                //? Redirect after success so refreshing the page does not submit the form again.
+                header('Location: userDashboard.php');
+                exit;
+            } elseif ($action === 'update' && $postId > 0) {
+                //! Update only the post identified by the submitted ID.
+                Post::update($postId, $userId, $content);
+                header('Location: userDashboard.php');
+                exit;
+            } elseif ($action === 'delete' && $postId > 0) {
+                //! Delete only a post belonging to the currently logged-in user.
+                Post::delete($postId, $userId);
+                header('Location: userDashboard.php');
+                exit;
+            }
+        }
+
+        //! Return the user's posts and any validation message to the dashboard view.
+        return [
+            'posts' => Post::forUser($userId),
+            'postError' => $postError,
+        ];
+    }
+    //! user registration logic 
     public function register(): array
     {
+        //? Validation errors are collected so the form can display them together.
         //! Only process the form after the user presses the Register button.
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             //! Read the values sent by the registration form.
@@ -80,6 +124,7 @@ class AuthController
     //! Authenticate a user submitted by the login form.
     public function login(): array
     {
+        //? Login validates credentials here before creating an authenticated session.
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $this->email = trim($_POST['email'] ?? '');
             $password = $_POST['password'] ?? '';
@@ -102,6 +147,7 @@ class AuthController
                 if ($user === null) {
                     $this->errors[] = 'The email or password is incorrect';
                 } else {
+                    //! Regenerate the session ID before storing the authenticated user.
                     session_start();
                     session_regenerate_id(true);
                     $_SESSION['user'] = [

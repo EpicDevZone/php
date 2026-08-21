@@ -29,16 +29,16 @@ $email = $login['email'];
                 <p class="text-sm text-slate-500 mt-2">Sign in to your account</p>
             </div>
 
-            <?php if (!empty($errors)): ?>
+            <?php if (!empty($errors)) { ?>
                 <div class="mb-5 rounded-xl border border-red-300 bg-red-100 p-4 text-base font-semibold text-red-800 shadow-sm">
                     <div class="mb-2 font-bold uppercase tracking-wide">Please fix the following:</div>
                     <ul class="list-disc pl-5 space-y-1">
-                        <?php foreach ($errors as $error): ?>
+                        <?php foreach ($errors as $error) { ?>
                             <li><?= htmlspecialchars($error) ?></li>
-                        <?php endforeach; ?>
+                        <?php } ?>
                     </ul>
                 </div>
-            <?php endif; ?>
+            <?php } ?>
             <?php //! This form sends the login values back to this same page. 
             ?>
             <form action="" method="POST" class="space-y-5">

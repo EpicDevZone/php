@@ -5,6 +5,7 @@ require_once __DIR__ . '/../src/core/Autoloader.php';
 
 use App\Core\Database;
 use App\Models\User as U;
+use App\Models\Post;
 ?>
 
 
@@ -31,13 +32,17 @@ use App\Models\User as U;
     $stmt->execute();
 
     $result = $stmt->fetchAll();
-    print_r($result);
+    // print_r($result);
 
-    echo "Hello world";
-    $newUserId = U::create("sunilkathyat", "sunilkathayat51@gmail.com", 'e327e3e78e7t');
-    $user1 = new U("suniuuul", "sunilkathauat41@gmail.com", "123421123");
+    // echo "Hello world";
+    // $newUserId = U::create("sunilkathyat", "sunilkathayat51@gmail.com", 'e327e3e78e7t');
+    // $user1 = new U("suniuuul", "sunilkathauat41@gmail.com", "123421123");
 
-    $user1->displayUser();
+    // $user1->displayUser();
+
+
+    $pdo = Database::getInstance()->getConnection()->prepare("SELECT * FROM posts");
+    
 
     ?>
 </body>

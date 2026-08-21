@@ -35,15 +35,15 @@ if (!empty($registration['userId'])) {
                 <p class="text-sm text-slate-500 mt-2">Create an Account</p>
             </div>
 
-            <?php if (!empty($registration['errors'])): ?>
-                <?php foreach ($registration['errors'] as $error): ?>
+            <?php if (!empty($registration['errors'])) { ?>
+                <?php foreach ($registration['errors'] as $error) { ?>
                     <p class="text-red-600"><?= htmlspecialchars($error) ?></p>
-                <?php endforeach; ?>
-            <?php elseif (!empty($registration['userId'])): ?>
+                <?php } ?>
+            <?php } elseif (!empty($registration['userId'])) { ?>
                 <p class="text-green-600">
                     Registration successful. User ID: <?= htmlspecialchars($registration['userId']) ?>
                 </p>
-            <?php endif; ?>
+            <?php } ?>
 
             <?php //! This form sends its values back to this same page. 
             ?>
